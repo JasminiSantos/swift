@@ -7,11 +7,14 @@ protocol Sequence<Element> { // expected-note {{'Sequence' declared here}}
 // 'any' is required here
 
 func takesSequenceOfInt1(_: Sequence<Int>) {}
-// expected-error@-1 {{use of protocol 'Sequence<Int>' as a type must be written 'any Sequence<Int>'}}
+// expected-error@-1 {{use of protocol 'Sequence<Int>' as a type must be prefixed with 'some' or 'any'}}
+// expected-note@-2 {{Replace with 'any Sequence<Int>'}}
+// expected-note@-3 {{Replace with 'some Sequence<Int>'}}
 
 func returnsSequenceOfInt1() -> Sequence<Int> {}
-// expected-error@-1 {{use of protocol 'Sequence<Int>' as a type must be written 'any Sequence<Int>'}}
-
+// expected-error@-1 {{use of protocol 'Sequence<Int>' as a type must be prefixed with 'some' or 'any'}}
+// expected-note@-2 {{Replace with 'any Sequence<Int>'}}
+// expected-note@-3 {{Replace with 'some Sequence<Int>'}}
 struct ConcreteSequence<Element> : Sequence {}
 
 extension Sequence {
@@ -74,8 +77,9 @@ func saturation(_ dry: any Sponge, _ wet: any Sponge<Int, Int>) {
 
 func typeExpr() {
   _ = Sequence<Int>.self
-  // expected-error@-1 {{use of protocol 'Sequence<Int>' as a type must be written 'any Sequence<Int>'}}
-
+  // expected-error@-1 {{use of protocol 'Sequence<Int>' as a type must be prefixed with 'some' or 'any'}}
+  // expected-note@-2 {{Replace with 'any Sequence<Int>'}}
+  // expected-note@-3 {{Replace with 'some Sequence<Int>'}}
   _ = any Sequence<Int>.self
   // expected-error@-1 {{'self' is not a member type of protocol 'parameterized_existential.Sequence<Swift.Int>'}}
 

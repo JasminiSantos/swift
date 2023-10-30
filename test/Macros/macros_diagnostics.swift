@@ -195,9 +195,13 @@ struct MyStruct<T: MyProto> {
 
 struct SomeType {
   #genericUnary<Equatable>(0 as Hashable)
-  // expected-error@-1{{use of protocol 'Equatable' as a type must be written 'any Equatable'}}
-  // expected-error@-2{{use of protocol 'Hashable' as a type must be written 'any Hashable'}}
-  // expected-error@-3{{external macro implementation type}}
+  // expected-error@-1{{use of protocol 'Equatable' as a type must be prefixed with 'some' or 'any'}}
+  // expected-note@-2 {{Replace with 'any Equatable'}}
+  // expected-note@-3 {{Replace with 'some Equatable'}}
+  // expected-error@-4{{use of protocol 'Hashable' as a type must be prefixed with 'some' or 'any'}}
+  // expected-note@-5 {{Replace with 'any Hashable'}}
+  // expected-note@-6 {{Replace with 'some Hashable'}}
+  // expected-error@-7{{external macro implementation type}}
 }
 
 

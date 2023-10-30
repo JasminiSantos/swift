@@ -91,7 +91,10 @@ protocol AsExistentialB {
 }
 
 protocol AsExistentialAssocTypeA {
-  var delegate : AsExistentialAssocTypeB? { get } // expected-error {{use of protocol 'AsExistentialAssocTypeB' as a type must be written 'any AsExistentialAssocTypeB'}}
+  // expected-error@+3 {{use of protocol 'AsExistentialAssocTypeB' as a type must be prefixed with 'some' or 'any'}}
+  // expected-note@+2 {{Replace with 'any AsExistentialAssocTypeB'}}
+  // expected-note@+1 {{Replace with 'some AsExistentialAssocTypeB'}}
+  var delegate : AsExistentialAssocTypeB? { get }
 }
 protocol AsExistentialAssocTypeB {
   func aMethod(_ object : AsExistentialAssocTypeA)
@@ -103,7 +106,10 @@ protocol AsExistentialAssocTypeAgainA {
   associatedtype Bar
 }
 protocol AsExistentialAssocTypeAgainB {
-  func aMethod(_ object : AsExistentialAssocTypeAgainA) // expected-error {{use of protocol 'AsExistentialAssocTypeAgainA' as a type must be written 'any AsExistentialAssocTypeAgainA'}}
+  // expected-error@+3 {{use of protocol 'AsExistentialAssocTypeAgainA' as a type must be prefixed with 'some' or 'any'}}
+  // expected-note@+2 {{Replace with 'any AsExistentialAssocTypeAgainA'}}
+  // expected-note@+1 {{Replace with 'some AsExistentialAssocTypeAgainA'}}
+  func aMethod(_ object : AsExistentialAssocTypeAgainA)
 }
 
 // https://github.com/apple/swift/issues/43164

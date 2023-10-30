@@ -97,12 +97,14 @@ func testGlobalVariable() {
 
 // expected-note @+1 6 {{in expansion of macro 'anonymousTypes' here}}
 #anonymousTypes(causeErrors: true) { "foo" }
-// DIAG_BUFFERS-DAG: @__swiftmacro_9MacroUser33{{.*}}anonymousTypesfMf2_{{.*}}error: use of protocol 'Equatable' as a type must be written 'any Equatable'
-// DIAG_BUFFERS-DAG: @__swiftmacro_9MacroUser03{{.*}}anonymousTypes{{.*}}introduceTypeCheckingErrorsfMf0_{{.*}}error: use of protocol 'Hashable' as a type must be written 'any Hashable'
+// DIAG_BUFFERS-DAG: @__swiftmacro_9MacroUser33{{.*}}anonymousTypesfMf2_{{.*}}error: use of protocol 'Equatable' as a type must be prefixed with 'some' or 'any'
+// DIAG_BUFFERS-DAG: @__swiftmacro_9MacroUser03{{.*}}anonymousTypes{{.*}}introduceTypeCheckingErrorsfMf0_{{.*}}error: use of protocol 'Hashable' as a type must be prefixed with 'some' or 'any'
 
 // expected-note @+1 2 {{in expansion of macro 'anonymousTypes' here}}
 #anonymousTypes { () -> String in
-  // expected-error @+1 {{use of protocol 'Equatable' as a type must be written 'any Equatable'}}
+  // expected-error @+3 {{use of protocol 'Equatable' as a type must be prefixed with 'some' or 'any'}}
+  // expected-note@+2 {{Replace with 'any Equatable'}}
+  // expected-note@+1 {{Replace with 'some Equatable'}}
   _ = 0 as Equatable
   return "foo"
 }

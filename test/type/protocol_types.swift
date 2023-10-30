@@ -2,8 +2,10 @@
 
 protocol HasSelfRequirements {
   func foo(_ x: Self)
-
-  func returnsOwnProtocol() -> HasSelfRequirements // expected-error {{use of protocol 'HasSelfRequirements' as a type must be written 'any HasSelfRequirements'}}
+  // expected-error@+3 {{use of protocol 'HasSelfRequirements' as a type must be prefixed with 'some' or 'any'}}
+  // expected-note@+2 {{Replace with 'any HasSelfRequirements'}}
+  // expected-note@+1 {{Replace with 'some HasSelfRequirements'}}
+  func returnsOwnProtocol() -> HasSelfRequirements
 }
 protocol Bar {
   // init() methods should not prevent use as an existential.
@@ -74,7 +76,10 @@ do {
 
   func checkIt(_ js: Any) throws {
     switch js {
-    case let dbl as HasAssoc: // expected-error {{use of protocol 'HasAssoc' as a type must be written 'any HasAssoc'}}
+    // expected-error@+3 {{use of protocol 'HasAssoc' as a type must be prefixed with 'some' or 'any'}}
+    // expected-note@+2 {{Replace with 'any HasAssoc'}}
+    // expected-note@+1 {{Replace with 'some HasAssoc'}}
+    case let dbl as HasAssoc:
       throw MyError.bad(dbl)
 
     default:
@@ -82,8 +87,10 @@ do {
     }
   }
 }
-
-func testHasAssoc(_ x: Any, _: HasAssoc) { // expected-error {{use of protocol 'HasAssoc' as a type must be written 'any HasAssoc'}}
+// expected-error@+3 {{use of protocol 'HasAssoc' as a type must be prefixed with 'some' or 'any'}}
+// expected-note@+2 {{Replace with 'any HasAssoc'}}
+// expected-note@+1 {{Replace with 'some HasAssoc'}}
+func testHasAssoc(_ x: Any, _: HasAssoc) {
   if let p = x as? any HasAssoc {
     p.foo() // don't crash here.
   }
@@ -91,13 +98,18 @@ func testHasAssoc(_ x: Any, _: HasAssoc) { // expected-error {{use of protocol '
   struct ConformingType : HasAssoc {
     typealias Assoc = Int
     func foo() {}
-
-    func method() -> HasAssoc {} // expected-error {{use of protocol 'HasAssoc' as a type must be written 'any HasAssoc'}}
+    // expected-error@+3 {{use of protocol 'HasAssoc' as a type must be prefixed with 'some' or 'any'}}
+    // expected-note@+2 {{Replace with 'any HasAssoc'}}
+    // expected-note@+1 {{Replace with 'some HasAssoc'}}
+    func method() -> HasAssoc {}
   }
 }
 
 // https://github.com/apple/swift/issues/42661
-var b: HasAssoc // expected-error {{use of protocol 'HasAssoc' as a type must be written 'any HasAssoc'}}
+// expected-error@+3 {{use of protocol 'HasAssoc' as a type must be prefixed with 'some' or 'any'}}
+// expected-note@+2 {{Replace with 'any HasAssoc'}}
+// expected-note@+1 {{Replace with 'some HasAssoc'}}
+var b: HasAssoc
 
 // Further generic constraint error testing - typealias used inside statements
 protocol P {}
@@ -118,20 +130,27 @@ typealias X = Struct1<Pub & Bar>
 _ = Struct1<Pub & Bar>.self
 
 typealias AliasWhere<T> = T
-where T : HasAssoc, T.Assoc == HasAssoc // expected-error {{use of protocol 'HasAssoc' as a type must be written 'any HasAssoc'}}
+// expected-error@+3 {{use of protocol 'HasAssoc' as a type must be prefixed with 'some' or 'any'}}
+// expected-note@+2 {{Replace with 'any HasAssoc'}}
+// expected-note@+1 {{Replace with 'some HasAssoc'}}
+where T : HasAssoc, T.Assoc == HasAssoc 
 
 struct StructWhere<T>
 where T : HasAssoc,
       T.Assoc == any HasAssoc {}
-
-protocol ProtocolWhere where T == HasAssoc { // expected-error {{use of protocol 'HasAssoc' as a type must be written 'any HasAssoc'}}
+// expected-error@+3 {{use of protocol 'HasAssoc' as a type must be prefixed with 'some' or 'any'}}
+// expected-note@+2 {{Replace with 'any HasAssoc'}}
+// expected-note@+1 {{Replace with 'some HasAssoc'}}
+protocol ProtocolWhere where T == HasAssoc {
   associatedtype T
 
   associatedtype U : HasAssoc
     where U.Assoc == any HasAssoc
 }
-
-extension HasAssoc where Assoc == HasAssoc {} // expected-error {{use of protocol 'HasAssoc' as a type must be written 'any HasAssoc'}}
+// expected-error@+3 {{use of protocol 'HasAssoc' as a type must be prefixed with 'some' or 'any'}}
+// expected-note@+2 {{Replace with 'any HasAssoc'}}
+// expected-note@+1 {{Replace with 'some HasAssoc'}}
+extension HasAssoc where Assoc == HasAssoc {}
 
 func FunctionWhere<T>(_: T)
 where T : HasAssoc,

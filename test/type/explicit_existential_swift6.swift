@@ -12,8 +12,14 @@ protocol Bar {
 }
 
 class Bistro{
-    convenience init(_: Bar){ self.init()} // expected-error{{use of protocol 'Bar' as a type must be written 'any Bar'}}{{25-28=any Bar}}
-    class func returnBar() -> Bar {} // expected-error {{use of protocol 'Bar' as a type must be written 'any Bar'}}{{31-34=any Bar}}
+    // expected-error @+3 {{use of protocol 'Bar' as a type must be prefixed with 'some' or 'any'}}
+    // expected-note@+2 {{Replace with 'any Bar'}}{{25-28=any Bar}}
+    // expected-note@+1 {{Replace with 'some Bar'}}{{25-28=some Bar}}
+    convenience init(_: Bar){ self.init()}
+    // expected-error @+3 {{use of protocol 'Bar' as a type must be prefixed with 'some' or 'any'}}
+    // expected-note@+2 {{Replace with 'any Bar'}}{{31-34=any Bar}}
+    // expected-note@+1 {{Replace with 'some Bar'}}{{31-34=some Bar}}
+    class func returnBar() -> Bar {}
 }
 
 func useBarAsType(_ x: any Bar) {}
@@ -147,14 +153,20 @@ protocol Collection<T> {
 
 struct TestParameterizedProtocol<T> : Collection {
   typealias T = T
-
-  let x : Collection<T> // expected-error {{use of protocol 'Collection<T>' as a type must be written 'any Collection<T>'}}
+  // expected-error @+3 {{use of protocol 'Collection<T>' as a type must be prefixed with 'some' or 'any'}}
+  // expected-note@+2 {{Replace with 'any Collection<T>'}}
+  // expected-note@+1 {{Replace with 'some Collection<T>'}}
+  let x : Collection<T>
 }
 
 func acceptAny(_: Collection<Int>) {}
-// expected-error@-1 {{use of protocol 'Collection<Int>' as a type must be written 'any Collection<Int>'}}
+// expected-error@-1 {{use of protocol 'Collection<Int>' as a type must be prefixed with 'some' or 'any'}}
+// expected-note@-2 {{Replace with 'any Collection<Int>'}}
+// expected-note@-3 {{Replace with 'some Collection<Int>'}}
 func returnsAny() -> Collection<Int> {}
-// expected-error@-1 {{use of protocol 'Collection<Int>' as a type must be written 'any Collection<Int>'}}
+// expected-error@-1 {{use of protocol 'Collection<Int>' as a type must be prefixed with 'some' or 'any'}}
+// expected-note@-2 {{Replace with 'any Collection<Int>'}}
+// expected-note@-3 {{Replace with 'some Collection<Int>'}}
 
 func testInvalidAny() {
   struct S: HasAssoc {
@@ -207,8 +219,10 @@ protocol RawRepresentable {
 
 enum E1: RawRepresentable {
   typealias RawValue = P1
-
-  var rawValue: P1 { // expected-error {{use of protocol 'P1' as a type must be written 'any P1'}}{{17-19=any P1}}
+  // expected-error @+3 {{use of protocol 'P1' as a type must be prefixed with 'some' or 'any'}}
+  // expected-note@+2 {{Replace with 'any P1'}}{{17-19=any P1}}
+  // expected-note@+1 {{Replace with 'some P1'}}{{17-19=some P1}}
+  var rawValue: P1 {
     return ConcreteComposition()
   }
 }
@@ -264,8 +278,12 @@ protocol Output {
   associatedtype A
 }
 
-// expected-error@+2{{use of protocol 'Input' as a type must be written 'any Input'}}{{30-35=any Input}}
-// expected-error@+1{{use of protocol 'Output' as a type must be written 'any Output'}}{{40-46=any Output}}
+// expected-error@+6{{use of protocol 'Input' as a type must be prefixed with 'some' or 'any'}}
+// expected-note@+5 {{Replace with 'any Input'}}{{30-35=any Input}}
+// expected-note@+4 {{Replace with 'some Input'}}{{30-35=some Input}}
+// expected-error@+3{{use of protocol 'Output' as a type must be prefixed with 'some' or 'any'}}
+// expected-note@+2 {{Replace with 'any Output'}}{{40-46=any Output}}
+// expected-note@+1 {{Replace with 'some Output'}}{{40-46=some Output}}
 typealias InvalidFunction = (Input) -> Output
 func testInvalidFunctionAlias(fn: InvalidFunction) {}
 
@@ -275,8 +293,12 @@ func testFunctionAlias(fn: ExistentialFunction) {}
 typealias Constraint = Input
 typealias ConstraintB = Input & InputB
 
-//expected-error@+2{{use of 'Constraint' (aka 'Input') as a type must be written 'any Constraint' (aka 'any Input')}}
-//expected-error@+1 2{{use of 'ConstraintB' (aka 'Input & InputB') as a type must be written 'any ConstraintB' (aka 'any Input & InputB')}}
+//expected-error@+6 {{use of 'Constraint' (aka 'Input') as a type must be prefixed with 'some' or 'any'}}
+// expected-note@+5 {{Replace with 'any Constraint'}}
+// expected-note@+4 {{Replace with 'some Constraint'}}
+//expected-error@+3 2{{use of 'ConstraintB' (aka 'Input & InputB') as a type must be prefixed with 'some' or 'any'}}
+// expected-note@+2 2{{Replace with 'any ConstraintB'}}
+// expected-note@+1 2{{Replace with 'some ConstraintB'}}
 func testConstraintAlias(x: Constraint, y: ConstraintB) {}
 
 typealias Existential = any Input
@@ -305,9 +327,13 @@ enum EE : Equatable, any Empty { // expected-error {{raw type 'any Empty' is not
 
 // Protocols from a serialized module (the standard library).
 do {
-  // expected-error@+1 {{use of protocol 'Decodable' as a type must be written 'any Decodable'}}
+  // expected-error@+3 {{use of protocol 'Decodable' as a type must be prefixed with 'some' or 'any'}}
+  // expected-note@+2 {{Replace with 'any Decodable'}}
+  // expected-note@+1 {{Replace with 'some Decodable'}}
   let _: Decodable
-  // expected-error@+1 2 {{use of 'Codable' (aka 'Decodable & Encodable') as a type must be written 'any Codable' (aka 'any Decodable & Encodable')}}
+  // expected-error@+3 2 {{use of 'Codable' (aka 'Decodable & Encodable') as a type must be prefixed with 'some' or 'any'}}
+  // expected-note@+2 2{{Replace with 'any Codable'}}
+  // expected-note@+1 2{{Replace with 'some Codable'}}
   let _: Codable
 }
 
@@ -319,18 +345,32 @@ func testAnyFixIt() {
     func method() -> any HasAssoc {}
   }
 
-  // expected-error@+1 {{use of protocol 'HasAssoc' as a type must be written 'any HasAssoc'}}{{10-18=any HasAssoc}}
+  // expected-error@+3 {{use of protocol 'HasAssoc' as a type must be prefixed with 'some' or 'any'}}
+  // expected-note@+2 {{Replace with 'any HasAssoc'}}{{10-18=any HasAssoc}}
+  // expected-note@+1 {{Replace with 'some HasAssoc'}}{{10-18=some HasAssoc}}
   let _: HasAssoc = ConformingType()
-  // expected-error@+1 {{use of protocol 'HasAssoc' as a type must be written 'any HasAssoc'}}{{19-27=any HasAssoc}}
+  // expected-error@+3 {{use of protocol 'HasAssoc' as a type must be prefixed with 'some' or 'any'}}
+  // expected-note@+2 {{Replace with 'any HasAssoc'}}{{19-27=any HasAssoc}}
+  // expected-note@+1 {{Replace with 'some HasAssoc'}}{{19-27=some HasAssoc}}
   let _: Optional<HasAssoc> = nil
-  // expected-error@+1 {{use of protocol 'HasAssoc' as a type must be written 'any HasAssoc'}}{{10-23=any HasAssoc.Type}}
+  // expected-error@+3 {{use of protocol 'HasAssoc' as a type must be prefixed with 'some' or 'any'}}
+  // expected-note@+2 {{Replace with 'any HasAssoc'}}{{10-23=any HasAssoc.Type}}
+  // expected-note@+1 {{Replace with 'some HasAssoc'}}{{10-23=some HasAssoc.Type}}
   let _: HasAssoc.Type = ConformingType.self
-  // expected-error@+1 {{use of protocol 'HasAssoc' as a type must be written 'any HasAssoc'}}{{10-25=any (HasAssoc).Type}}
+  // expected-error@+3 {{use of protocol 'HasAssoc' as a type must be prefixed with 'some' or 'any'}}
+  // expected-note@+2 {{Replace with 'any HasAssoc'}}{{10-25=any (HasAssoc).Type}}
+  // expected-note@+1 {{Replace with 'some HasAssoc'}}{{10-25=some (HasAssoc).Type}}
   let _: (HasAssoc).Type = ConformingType.self
-  // expected-error@+1 {{use of protocol 'HasAssoc' as a type must be written 'any HasAssoc'}}{{10-27=any ((HasAssoc)).Type}}
+  // expected-error@+3 {{use of protocol 'HasAssoc' as a type must be prefixed with 'some' or 'any'}}
+  // expected-note@+2 {{Replace with 'any HasAssoc'}}{{10-27=any ((HasAssoc)).Type}}
+  // expected-note@+1 {{Replace with 'some HasAssoc'}}{{10-27=some ((HasAssoc)).Type}}
   let _: ((HasAssoc)).Type = ConformingType.self
-  // expected-error@+2 {{use of protocol 'HasAssoc' as a type must be written 'any HasAssoc'}}{{10-18=(any HasAssoc)}}
-  // expected-error@+1 {{use of protocol 'HasAssoc' as a type must be written 'any HasAssoc'}}{{30-38=(any HasAssoc)}}
+  // expected-error@+6 {{use of protocol 'HasAssoc' as a type must be prefixed with 'some' or 'any'}}
+  // expected-note@+5 {{Replace with 'any HasAssoc'}}{{10-18=(any HasAssoc)}}
+  // expected-note@+4 {{Replace with 'some HasAssoc'}}{{10-18=(some HasAssoc)}}
+  // expected-error@+3 {{use of protocol 'HasAssoc' as a type must be prefixed with 'some' or 'any'}}
+  // expected-note@+2 {{Replace with 'any HasAssoc'}}{{30-38=(any HasAssoc)}}
+  // expected-note@+1 {{Replace with 'some HasAssoc'}}{{30-38=(some HasAssoc)}}
   let _: HasAssoc.Protocol = HasAssoc.self
   do {
     struct Wrapper {
@@ -341,17 +381,29 @@ func testAnyFixIt() {
     // 1. 'any' is attached to 'HasAssocAlias' instead of 'Wrapper.HasAssocAlias'
     // 2. What is the correct fix-it for the initializer?
     //
-    // expected-error@+2:20 {{use of 'Wrapper.HasAssocAlias' (aka 'HasAssoc') as a type must be written 'any Wrapper.HasAssocAlias' (aka 'any HasAssoc')}}{{20-33=(any HasAssocAlias)}}
-    // expected-error@+1:57 {{use of 'Wrapper.HasAssocAlias' (aka 'HasAssoc') as a type must be written 'any Wrapper.HasAssocAlias' (aka 'any HasAssoc')}}{{57-70=(any HasAssocAlias)}}
+    // expected-error@+6:20 {{use of 'Wrapper.HasAssocAlias' (aka 'HasAssoc') as a type must be prefixed with 'some' or 'any'}}
+    // expected-note@+5:20 {{Replace with 'any HasAssocAlias'}}{{20-33=(any HasAssocAlias)}}
+    // expected-note@+4:20 {{Replace with 'some HasAssocAlias'}}{{20-33=(some HasAssocAlias)}}
+    // expected-error@+3:57 {{use of 'Wrapper.HasAssocAlias' (aka 'HasAssoc') as a type must be prefixed with 'some' or 'any'}}
+    // expected-note@+2:57 {{Replace with 'any HasAssocAlias'}}{{57-70=(any HasAssocAlias)}}
+    // expected-note@+1:57 {{Replace with 'some HasAssocAlias'}}{{57-70=(some HasAssocAlias)}}   
     let _: Wrapper.HasAssocAlias.Protocol = wrapperMeta.HasAssocAlias.self
   }
-  // expected-error@+1 {{use of protocol 'HasAssoc' as a type must be written 'any HasAssoc'}}{{11-19=any HasAssoc}}
+  // expected-error@+3 {{use of protocol 'HasAssoc' as a type must be prefixed with 'some' or 'any'}}
+  // expected-note@+2 {{Replace with 'any HasAssoc'}}{{11-19=any HasAssoc}}
+  // expected-note@+1 {{Replace with 'some HasAssoc'}}{{11-19=some HasAssoc}}
   let _: (HasAssoc).Protocol = (any HasAssoc).self
-  // expected-error@+1 {{use of protocol 'HasAssoc' as a type must be written 'any HasAssoc'}}{{10-18=(any HasAssoc)}}
+  // expected-error@+3 {{use of protocol 'HasAssoc' as a type must be prefixed with 'some' or 'any'}}
+  // expected-note@+2 {{Replace with 'any HasAssoc'}}{{10-18=(any HasAssoc)}}
+  // expected-note@+1 {{Replace with 'some HasAssoc'}}{{10-18=(some HasAssoc)}}
   let _: HasAssoc? = ConformingType()
-  // expected-error@+1 {{use of protocol 'HasAssoc' as a type must be written 'any HasAssoc'}}{{10-23=(any HasAssoc.Type)}}
+  // expected-error@+3 {{use of protocol 'HasAssoc' as a type must be prefixed with 'some' or 'any'}}
+  // expected-note@+2 {{Replace with 'any HasAssoc'}}{{10-23=(any HasAssoc.Type)}}
+  // expected-note@+1 {{Replace with 'some HasAssoc'}}{{10-23=(some HasAssoc.Type)}}
   let _: HasAssoc.Type? = ConformingType.self
-  // expected-error@+1 {{use of protocol 'HasAssoc' as a type must be written 'any HasAssoc'}}{{10-18=(any HasAssoc)}}
+  // expected-error@+3 {{use of protocol 'HasAssoc' as a type must be prefixed with 'some' or 'any'}}
+  // expected-note@+2 {{Replace with 'any HasAssoc'}}{{10-18=(any HasAssoc)}}
+  // expected-note@+1 {{Replace with 'some HasAssoc'}}{{10-18=(some HasAssoc)}}
   let _: HasAssoc.Protocol? = (any HasAssoc).self
 
   // expected-error@+1 {{optional 'any' type must be written '(any HasAssoc)?'}}{{10-23=(any HasAssoc)?}}
@@ -369,9 +421,13 @@ func testNestedMetatype() {
 func testEnumAssociatedValue() {
   enum E {
     case c1((any HasAssoc) -> Void)
-    // expected-error@+1 {{use of protocol 'HasAssoc' as a type must be written 'any HasAssoc'}}
+    // expected-error@+3 {{use of protocol 'HasAssoc' as a type must be prefixed with 'some' or 'any'}}
+    // expected-note@+2 {{Replace with 'any HasAssoc'}}
+    // expected-note@+1 {{Replace with 'some HasAssoc'}}
     case c2((HasAssoc) -> Void)
-    // expected-error@+1 {{use of protocol 'P' as a type must be written 'any P'}}
+    // expected-error@+3 {{use of protocol 'P' as a type must be prefixed with 'some' or 'any'}}
+    // expected-note@+2 {{Replace with 'any P'}}
+    // expected-note@+1 {{Replace with 'some P'}}
     case c3((P) -> Void)
   }
 }

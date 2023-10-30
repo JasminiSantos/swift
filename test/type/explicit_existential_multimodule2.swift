@@ -11,5 +11,8 @@
 public protocol P {}
 #else
 import M
-func test(_: P) {} // expected-error {{use of protocol 'P' as a type must be written 'any P'}}
+// expected-error@+3 {{use of protocol 'P' as a type must be prefixed with 'some' or 'any'}}
+// expected-note@+2 {{Replace with 'any P'}}
+// expected-note@+1 {{Replace with 'some P'}}
+func test(_: P) {}
 #endif

@@ -30,8 +30,10 @@ protocol OuterProtocol {
 
 struct ConformsToOuterProtocol : OuterProtocol {
   typealias Hen = Int
-
-  func f() { let _ = InnerProtocol.self } // expected-error {{use of protocol 'InnerProtocol' as a type must be written 'any InnerProtocol'}}
+  // expected-error@+3 {{use of protocol 'InnerProtocol' as a type must be prefixed with 'some' or 'any'}}
+  // expected-note@+2 {{Replace with 'any InnerProtocol'}}
+  // expected-note@+1 {{Replace with 'some InnerProtocol'}}
+  func f() { let _ = InnerProtocol.self }
 }
 
 protocol Racoon {
