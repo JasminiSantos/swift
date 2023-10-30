@@ -5365,9 +5365,18 @@ ERROR(any_not_existential,none,
 ERROR(incorrect_optional_any,none,
       "optional 'any' type must be written %0",
       (Type))
+
 ERROR(existential_requires_any,none,
-      "use of %select{protocol |}2%0 as a type must be written %1",
-      (Type, Type, bool))
+    "use of %select{protocol |}1%0 as a type must be prefixed with 'some' or 'any'",
+      (Type, bool))
+
+NOTE(replace_with_opaque_or_existential,none,
+           "Replace with %0",
+           (Type))
+
+NOTE(replace_with_type_repr,none,
+           "Replace with '%0'",
+           (StringRef))
 
 ERROR(nonisolated_let,none,
       "'nonisolated' is meaningless on 'let' declarations because "
