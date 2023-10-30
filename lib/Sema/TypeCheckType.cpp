@@ -789,13 +789,21 @@ static Type applyGenericArguments(Type type, TypeResolution resolution,
         auto parameterized =
             ParameterizedProtocolType::get(ctx, protoType, argTys);
         diags.diagnose(loc, diag::existential_requires_any, parameterized,
-                       ExistentialType::get(parameterized),
                        /*isAlias=*/isa<TypeAliasType>(type.getPointer()));
+          
+          diags.diagnose(loc, diag::replace_with_opaque_or_existential,
+                         ExistentialType::get(parameterized));
+
+          diags.diagnose(loc, diag::replace_with_type_repr, "some ");
       } else {
         diags.diagnose(loc, diag::existential_requires_any,
                        protoDecl->getDeclaredInterfaceType(),
-                       protoDecl->getDeclaredExistentialType(),
                        /*isAlias=*/isa<TypeAliasType>(type.getPointer()));
+          
+        diags.diagnose(loc, diag::replace_with_opaque_or_existential,
+                         protoDecl->getDeclaredExistentialType());
+          
+          diags.diagnose(loc, diag::replace_with_type_repr, "some ");
       }
 
       return ErrorType::get(ctx);
@@ -5288,22 +5296,39 @@ public:
     }
 
     std::string fix;
+    std::string fixOpaque;
     llvm::raw_string_ostream OS(fix);
-    if (needsParens)
+    llvm::raw_string_ostream OSOpaque(fixOpaque);
+    if (needsParens){
       OS << "(";
+      OSOpaque << "(";
+    }
     ExistentialTypeRepr existential(SourceLoc(), replaceRepr);
+    OpaqueReturnTypeRepr opaque(SourceLoc(), replaceRepr);
     existential.print(OS);
-    if (needsParens)
-      OS << ")";
+    opaque.print(OSOpaque);
+    if (needsParens){
+        OS << ")";
+        OSOpaque << ")";
+    }
 
     if (auto *proto = dyn_cast_or_null<ProtocolDecl>(T->getBoundDecl())) {
       if (proto->existentialRequiresAny()) {
         Ctx.Diags.diagnose(T->getNameLoc(),
                            diag::existential_requires_any,
                            proto->getDeclaredInterfaceType(),
-                           proto->getDeclaredExistentialType(),
-                           /*isAlias=*/false)
+                           /*isAlias=*/false);
+          
+          Ctx.Diags.diagnose(T->getNameLoc(), 
+                             diag::replace_with_opaque_or_existential,
+                             proto->getDeclaredExistentialType())
             .fixItReplace(replaceRepr->getSourceRange(), fix);
+          
+          Ctx.Diags.diagnose(T->getNameLoc(), 
+                             diag::replace_with_type_repr,
+                             fixOpaque)
+            .fixItReplace(replaceRepr->getSourceRange(),
+                          fixOpaque);
       }
     } else if (auto *alias =
                    dyn_cast_or_null<TypeAliasDecl>(T->getBoundDecl())) {
@@ -5321,9 +5346,19 @@ public:
           Ctx.Diags.diagnose(T->getNameLoc(),
                              diag::existential_requires_any,
                              alias->getDeclaredInterfaceType(),
-                             ExistentialType::get(alias->getDeclaredInterfaceType()),
-                             /*isAlias=*/true)
-              .fixItReplace(replaceRepr->getSourceRange(), fix);
+                             /*isAlias=*/true);
+            
+            Ctx.Diags.diagnose(T->getNameLoc(), 
+                               diag::replace_with_opaque_or_existential,
+                               ExistentialType::get(alias->getDeclaredInterfaceType()))
+                .fixItReplace(replaceRepr->getSourceRange(), fix);
+            
+            Ctx.Diags.diagnose(T->getNameLoc(), 
+                               diag::replace_with_type_repr,
+                               fixOpaque)
+                .fixItReplace(replaceRepr->getSourceRange(), fixOpaque);
+            
+
         }
       }
     }
