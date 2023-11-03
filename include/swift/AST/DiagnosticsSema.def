@@ -5376,7 +5376,7 @@ NOTE(replace_with_opaque_or_existential,none,
 
 NOTE(replace_with_type_repr,none,
            "Replace with '%0'",
-           (StringRef))
+           (TypeRepr*))
 
 ERROR(nonisolated_let,none,
       "'nonisolated' is meaningless on 'let' declarations because "

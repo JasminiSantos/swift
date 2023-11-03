@@ -774,7 +774,12 @@ static Type applyGenericArguments(Type type, TypeResolution resolution,
     // type and we're in a supported context.
     if (resolution.getOptions().isConstraintImplicitExistential() &&
         !ctx.LangOpts.hasFeature(Feature::ImplicitSome)) {
-
+        
+        std::string fixOpaque;
+        llvm::raw_string_ostream OSOpaque(fixOpaque);
+        OpaqueReturnTypeRepr opaque(SourceLoc(), repr);
+        opaque.print(OSOpaque);
+        
       if (!genericArgs.empty()) {
 
         SmallVector<Type, 2> argTys;
@@ -794,7 +799,9 @@ static Type applyGenericArguments(Type type, TypeResolution resolution,
           diags.diagnose(loc, diag::replace_with_opaque_or_existential,
                          ExistentialType::get(parameterized));
 
-          diags.diagnose(loc, diag::replace_with_type_repr, "some ");
+          diags.diagnose(loc, diag::replace_with_type_repr, &opaque)
+              .fixItReplace(repr->getSourceRange(),
+                            fixOpaque);
       } else {
         diags.diagnose(loc, diag::existential_requires_any,
                        protoDecl->getDeclaredInterfaceType(),
@@ -803,7 +810,10 @@ static Type applyGenericArguments(Type type, TypeResolution resolution,
         diags.diagnose(loc, diag::replace_with_opaque_or_existential,
                          protoDecl->getDeclaredExistentialType());
           
-          diags.diagnose(loc, diag::replace_with_type_repr, "some ");
+          diags.diagnose(loc, diag::replace_with_type_repr, &opaque)
+              .fixItReplace(repr->getSourceRange(),
+                            fixOpaque);
+          
       }
 
       return ErrorType::get(ctx);
@@ -5326,7 +5336,7 @@ public:
           
           Ctx.Diags.diagnose(T->getNameLoc(), 
                              diag::replace_with_type_repr,
-                             fixOpaque)
+                             &opaque)
             .fixItReplace(replaceRepr->getSourceRange(),
                           fixOpaque);
       }
@@ -5355,7 +5365,7 @@ public:
             
             Ctx.Diags.diagnose(T->getNameLoc(), 
                                diag::replace_with_type_repr,
-                               fixOpaque)
+                               &opaque)
                 .fixItReplace(replaceRepr->getSourceRange(), fixOpaque);
             
 
